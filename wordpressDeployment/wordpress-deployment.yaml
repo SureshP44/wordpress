@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-wordpress
+  labels:
+    app: app-wordpress
+spec:
+  selector:
+    matchLabels:
+      app: app-wordpress
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: app-wordpress
+        tier: frontend
+    spec:
+      containers:
+      - image: wordpress:5-php7.1-apache
+        name: app-wordpress
+        env:
+          - name: WORDPRESS_DB_HOST
+            value: mysql-db
+          - name: WORDPRESS_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-secret
+                key: password
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: /var/www
+      volumes:
+        - name: wordpress-persistent-storage
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
+
